@@ -14,7 +14,13 @@
   "native_ui_audit": "static ownership audit: 0 errors; DESIGN lint: 0 errors, 2 warnings for system-color documentation tokens",
   "real_health_data": "none; no iPhone paired",
   "pending": [
-    "Full iOS target build: Xcode and iOS SDK are not installed",
-    "Physical iPhone signing, health/local-network authorization, UI and background-delivery verification"
-  ]
+    "Local Xcode setup for signing and installation on the owner's iPhone",
+    "Physical iPhone health/local-network authorization, native UI and background-delivery verification"
+  ],
+  "scope": "Local checks and initial CI verification snapshot. Current CI status: https://github.com/zxycode7/watch-health/actions",
+  "ios_simulator_build": {
+    "status": "passed",
+    "source_commit": "1f6baa67aa4613927b2d4690429aac4cfd01dd73",
+    "run": "https://github.com/zxycode7/watch-health/actions/runs/38924063250"
+  }
 }
