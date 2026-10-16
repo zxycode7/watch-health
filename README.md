@@ -63,6 +63,10 @@ python3 scripts/pair.py
 
 配对后选择所需项目，点「授权并同步」，允许系统健康读取权限与本地网络访问。首次同步保持手机解锁、App 打开。Mac 防火墙如询问 Python 的传入连接，需要允许本地网络连接。
 
+「确认配对」只有收到完整有效链接后才可点击；链接为空或格式错误时，输入框下方会显示原因。首次允许本地网络后，若仍提示连接不到 Mac，可再次点「确认配对」。
+
+部分系统版本的健康授权分为两页：先选择读取主题并点「继续」，再选择历史数据范围并点「允许」。允许读取全部历史后，App 首次仍只同步最近 30 天；更早记录通过「补录历史」读取。
+
 后台更新由 iOS 决定，锁屏、低电量、手机被强退、Mac 休眠或不在同一网络时可能延后。打开 App 或点「立即同步」可以补齐，不能承诺精确时刻运行。
 
 ## 在 Codex 查询
@@ -107,7 +111,7 @@ xcodebuild -project ios/WatchBridge.xcodeproj -scheme WatchBridge -destination '
 
 前两项仅使用临时合成数据。Swift 传输测试编译并调用与 iPhone 共用的网络源码，实际测试 TLS 配对、错误证书拒绝、鉴权上传和确认，不伪装成真机 HealthKit 测试。
 
-完整 iOS 构建、UI、HealthKit 真机、后台更新、签名验证仍需要 Xcode 与自己的 iPhone。参见 [PRODUCT.md](PRODUCT.md)、[UX-CONTRACT.md](UX-CONTRACT.md)。
+本地已完成本人 iPhone 的签名安装、真机 UI 配对、系统健康读取授权、首次前台同步和只读 MCP 查询验证。后台更新、锁屏与长期稳定性仍需单独验收。验证快照见 [BUILD-STATUS.json](BUILD-STATUS.json)，交互约束见 [UX-CONTRACT.md](UX-CONTRACT.md)。
 
 ## 文件结构
 

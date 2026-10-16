@@ -3,8 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var model: SyncModel
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showingPairing = false
-    @State private var pairingText = ""
+    @State private var pairingPresentation: PairingPresentation?
     @State private var historyDays = 90
 
     var body: some View {
@@ -30,7 +29,9 @@ struct ContentView: View {
                             Text("在 Mac 上生成配对码，用系统相机扫码，或粘贴配对链接。")
                                 .foregroundStyle(.secondary)
                         }
-                        Button(model.connection == nil ? "配对 Mac" : "更换 Mac") { showingPairing = true }
+                        Button(model.connection == nil ? "配对 Mac" : "更换 Mac") {
+                            pairingPresentation = PairingPresentation(text: "")
+                        }
                             .buttonStyle(.bordered).disabled(model.isSyncing || model.isAuthorizing)
                     }
 
@@ -93,54 +94,38 @@ struct ContentView: View {
             }
             .background(Color(uiColor: .systemGroupedBackground))
             .toolbar(.hidden, for: .navigationBar)
-            .sheet(isPresented: $showingPairing) { pairingSheet }
+            .sheet(item: $pairingPresentation) { presentation in
+                PairingSheet(model: model, initialText: presentation.text)
+            }
         }
         .tint(BridgeTheme.accent)
         .environment(\.locale, Locale(identifier: "zh_Hans_CN"))
         .environment(\.timeZone, TimeZone(identifier: "Asia/Shanghai")!)
-        .onOpenURL { url in pairingText = url.absoluteString; showingPairing = true }
+        .onOpenURL { url in
+            pairingPresentation = PairingPresentation(text: url.absoluteString)
+        }
+        .task { await prepareDeveloperLaunch() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Task { await model.resume() } }
         }
     }
 
-    private var pairingSheet: some View {
-        NavigationStack {
-            Form {
-                Section("Mac 配对链接") {
-                    SecureField("粘贴 watchbridge:// 开头的链接", text: $pairingText)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled()
-                        .accessibilityLabel("Mac 配对链接，包含一次性配对码")
-                    PasteButton(payloadType: String.self) { strings in pairingText = strings.first ?? "" }
-                    if let link = try? PairingLink(pairingText) {
-                        LabeledContent("将连接", value: link.endpoint.host ?? "Mac")
-                        Text("证书指纹：\(link.fingerprint.prefix(12))…\(link.fingerprint.suffix(12))")
-                            .font(BridgeTheme.utility).textSelection(.enabled)
-                    }
-                }
-                Section {
-                    Button {
-                        Task {
-                            await model.pair(pairingText)
-                            if !model.isError { pairingText = ""; showingPairing = false }
-                        }
-                    } label: {
-                        HStack {
-                            Text("确认配对")
-                            Spacer()
-                            if model.isPairing { ProgressView() }
-                        }.frame(minHeight: 32)
-                    }.disabled(model.isPairing || (try? PairingLink(pairingText)) == nil)
-                    if model.isError { Text(model.message).foregroundStyle(.red) }
-                } footer: {
-                    Text("只使用你自己 Mac 生成的链接。配对码 5 分钟内有效，只能使用一次。确认后，所选健康数据会发送到这台 Mac。")
-                }
-            }
-            .navigationTitle("配对 Mac").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .cancellationAction) {
-                Button("取消") { pairingText = ""; showingPairing = false }.disabled(model.isPairing)
-            } }
-            .interactiveDismissDisabled(model.isPairing)
+    private func prepareDeveloperLaunch() async {
+        #if DEBUG
+        // Development launches can supply a pairing draft; confirmation is still required.
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--pairing-link"), arguments.indices.contains(index + 1) {
+            pairingPresentation = PairingPresentation(text: arguments[index + 1])
+            return
         }
+        if arguments.contains("--request-health-access"), model.connection != nil {
+            await model.authorizeAndSync()
+        }
+        #endif
     }
+}
+
+private struct PairingPresentation: Identifiable {
+    let id = UUID()
+    let text: String
 }

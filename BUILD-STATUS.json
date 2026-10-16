@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-16",
+  "date": "2026-10-17",
   "release": "0.1.0",
   "mac_service": "running as user LaunchAgent local.watchbridge.sync",
   "mcp": "registered and initialize/tools/list/status verified; 3 read-only tools",
@@ -9,18 +9,27 @@
   },
   "swift_transport": "live local TLS pairing, bad-pin rejection, authenticated synthetic upload and acknowledgement passed",
   "swift_typecheck": "Models, Keychain, BridgeClient and HealthReader passed against installed macOS SDK",
-  "swift_syntax": "all 8 iOS Swift source files parsed",
+  "swift_syntax": "all 9 iOS Swift source files parsed",
   "xcode_project": "project.pbxproj, Info.plist, and entitlements property-list validation passed",
-  "native_ui_audit": "static ownership audit: 0 errors; DESIGN lint: 0 errors, 2 warnings for system-color documentation tokens",
-  "real_health_data": "none; no iPhone paired",
+  "native_ui_audit": "strict ownership audit: 0 findings, errors or warnings",
+  "real_health_data": "Physical iPhone foreground HealthKit sync and local read-only MCP query verified; health records remain in the private Mac state directory",
   "pending": [
-    "Local Xcode setup for signing and installation on the owner's iPhone",
-    "Physical iPhone health/local-network authorization, native UI and background-delivery verification"
+    "Background delivery, locked-device behavior and long-term reliability",
+    "Accessibility, partial permission refusal, certificate replacement and offline recovery acceptance"
   ],
-  "scope": "Local checks and initial CI verification snapshot. Current CI status: https://github.com/zxycode7/watch-health/actions",
+  "scope": "Local verification snapshot. No personal health records, device identifiers, pairing links, credentials or signing material are published. CI status: https://github.com/zxycode7/watch-health/actions",
   "ios_simulator_build": {
     "status": "passed",
     "source_commit": "1f6baa67aa4613927b2d4690429aac4cfd01dd73",
-    "run": "https://github.com/zxycode7/watch-health/actions/runs/38924063250"
+    "run": "https://github.com/zxycode7/watch-health/actions/runs/38924063250",
+    "scope": "Earlier CI build, separate from the physical-device verification above"
+  },
+  "physical_device": {
+    "signed_install": "passed on owner physical iPhone",
+    "pairing_ui": "passed through physical XCUITest; backend registration matched the app device ID",
+    "health_authorization": "selected seven read topics, confirmed system history scope and allowed access on the physical iPhone",
+    "foreground_sync": "passed; Mac samples belong to the physical iPhone and include Watch source records",
+    "read_only_mcp": "records query succeeded against received real data",
+    "background_and_locked_delivery": "not verified"
   }
 }
