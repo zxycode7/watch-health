@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Test storage, authentication, MCP and installer
+        run: python3 -m unittest discover -s tests -v
+
+  ios:
+    name: Swift transport and iOS build
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Exercise the native TLS client against the local service
+        run: python3 -m tests.test_swift_transport
+      - name: Typecheck shared native components
+        run: >-
+          xcrun swiftc -typecheck
+          ios/WatchBridge/Models.swift
+          ios/WatchBridge/Keychain.swift
+          ios/WatchBridge/BridgeClient.swift
+          ios/WatchBridge/HealthReader.swift
+      - name: Build the full iPhone app for Simulator
+        run: >-
+          xcodebuild
+          -project ios/WatchBridge.xcodeproj
+          -scheme WatchBridge
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build/DerivedData
+          CODE_SIGNING_ALLOWED=NO
+          build

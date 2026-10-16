@@ -1,0 +1,26 @@
+{
+  "profile": "product-admin",
+  "sourceRoots": [
+    "ios/WatchBridge"
+  ],
+  "locale": "zh-CN",
+  "canonicalMap": "UX-CONTRACT.md",
+  "requiredCapabilities": [
+    "Form",
+    "Select/Listbox"
+  ],
+  "ownership": {
+    "Select/Listbox": "native"
+  },
+  "requiredCommands": [
+    "unit",
+    "swift-transport"
+  ],
+  "commands": {
+    "unit": "python3 -m unittest discover -s tests -v",
+    "swift-transport": "python3 -m tests.test_swift_transport"
+  },
+  "evidence": {
+    "failurePaths": "tests/test_watchbridge.py"
+  }
+}
