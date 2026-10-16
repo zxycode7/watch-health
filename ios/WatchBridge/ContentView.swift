@@ -97,7 +97,7 @@ private struct OverviewView: View {
                     } else {
                         Button(action: syncAction) {
                             Text(actionTitle).frame(maxWidth: .infinity).padding(.vertical, 9)
-                        }.buttonStyle(.borderedProminent).disabled(model.busy || model.paused || model.selected.isEmpty)
+                        }.buttonStyle(.borderedProminent).tint(BridgeTheme.actionFill).disabled(model.busy || model.paused || model.selected.isEmpty)
                             .accessibilityIdentifier("sync.primary")
                         if model.paused { Text("在设置中恢复同步后即可继续。").font(.footnote).foregroundStyle(.secondary) }
                         if model.selected.isEmpty { Text("请先在设置中选择至少一项数据。").font(.footnote).foregroundStyle(.secondary) }

@@ -49,7 +49,7 @@ components:
 
 ## Colors
 
-浅色主操作色为 #385CD9，深色主操作色为 #8FA8FF；品牌底色 #111E44。运行时使用动态 UIColor / NSColor 适配，卡片、背景与正文使用系统语义色；frontmatter 的 surface、text、background 是浅色基线。
+浅色文字强调色为 #385CD9，深色文字强调色为 #8FA8FF；品牌底色 #111E44。实心主按钮在两种模式下都使用 #385CD9（BridgeTheme.actionFill）和白色文字，避免浅蓝底白字的对比度不足。运行时使用动态 UIColor / NSColor 适配，卡片、背景与正文使用系统语义色；frontmatter 的 surface、text、background 是浅色基线。
 
 错误必须含恢复说明，连接状态同时有文字和符号。原始记录图表使用系统分类配色区分来源，不用红绿暗示医学判断。
 
@@ -77,7 +77,8 @@ Mac 使用 NavigationSplitView，侧栏 210–235pt，窗口至少 940×650pt。
 
 | 语义角色 | 运行时所有者 | 消费方 |
 |---|---|---|
-| 动态主操作色 | BridgeTheme.accent | 两端按钮、导航、来源符号 |
+| 动态文字强调色 | BridgeTheme.accent | 两端链接、导航、来源符号 |
+| 实心主操作填充 | BridgeTheme.actionFill | 两端 borderedProminent 主按钮 |
 | 品牌背景 | BridgeTheme.ink | 两端概览封面 |
 | 背景和表面 | BridgeTheme.background / surface | 两端工作区、BridgeCard |
 | 容器 | BridgeCard | 状态、连接、MCP、存储及目录 |

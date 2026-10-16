@@ -244,7 +244,7 @@ private struct DevicePanel: View {
             VStack(alignment: .leading, spacing: 22) {
                 PanelTitle(title: "设备与配对", subtitle: "让你的 iPhone 通过本地网络连接这台 Mac。")
                 BridgeCard {
-                    HStack { Label("添加 iPhone", systemImage: "qrcode").font(.headline); Spacer(); Button("生成配对二维码") { Task { await model.pair() } }.buttonStyle(.borderedProminent).disabled(model.runningAction || !model.serviceOnline) }
+                    HStack { Label("添加 iPhone", systemImage: "qrcode").font(.headline); Spacer(); Button("生成配对二维码") { Task { await model.pair() } }.buttonStyle(.borderedProminent).tint(BridgeTheme.actionFill).disabled(model.runningAction || !model.serviceOnline) }
                     Text("连接同一 Wi‑Fi，在 iPhone 系统相机中扫描，再在维律中核对目标 Mac 并确认。二维码 5 分钟有效，只可使用一次。")
                         .foregroundStyle(.secondary)
                     if !model.serviceOnline { Text("先在存储与服务中启动接收服务。").font(.footnote).foregroundStyle(.secondary) }

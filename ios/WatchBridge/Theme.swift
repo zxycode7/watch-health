@@ -7,6 +7,7 @@ import AppKit
 
 // Shared runtime token owner for both native applications. See DESIGN.md.
 enum BridgeTheme {
+    static let actionFill = Color(red: 56/255, green: 92/255, blue: 217/255)
     static let ink = Color(red: 17/255, green: 30/255, blue: 68/255)
     static let accent: Color = {
         #if os(iOS)
