@@ -56,7 +56,7 @@ enum BridgeClient {
             guard let response = response as? HTTPURLResponse else { throw BridgeError.message("Mac 未返回有效响应。") }
             guard response.statusCode == 200 else {
                 switch response.statusCode {
-                case 401: throw BridgeError.message("配对已失效，请在 Mac 上生成新链接并重新配对。")
+                case 401: throw BridgeError.connection("配对已失效，请在 Mac 上生成新链接并重新配对。")
                 case 409: throw BridgeError.message("同步批次冲突。请重试，原有数据已保留。")
                 case 413: throw BridgeError.message("本次数据过多，请缩短补录范围后重试。")
                 default: throw BridgeError.message("Mac 同步服务返回错误（\(response.statusCode)）。请确认服务正在运行。")
@@ -65,9 +65,9 @@ enum BridgeClient {
             return try JSONDecoder().decode(Reply.self, from: data)
         } catch let error as URLError {
             if [.serverCertificateUntrusted, .secureConnectionFailed, .cancelled].contains(error.code) {
-                throw BridgeError.message("无法验证 Mac 的证书。请检查配对链接；更换证书后需要重新配对。")
+                throw BridgeError.connection("无法验证 Mac 的证书。请检查配对链接；更换证书后需要重新配对。")
             }
-            throw BridgeError.message("连接不到 Mac。请确认同一 Wi‑Fi、本地网络权限和 Mac 服务状态，再点一次同步。")
+            throw BridgeError.connection("连接不到 Mac。请确认同一 Wi‑Fi、本地网络权限和 Mac 服务状态，再点一次同步。")
         }
     }
 

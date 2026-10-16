@@ -16,6 +16,12 @@ final class SyncModel: ObservableObject {
     @Published private(set) var selected: Set<HealthMetric>
     @Published private(set) var authorizationConfigured: Bool
     @Published private(set) var paused: Bool
+    @Published private(set) var previews: [HealthMetric: [HealthRecord]] = [:]
+    @Published private(set) var previewErrors: [HealthMetric: String] = [:]
+    @Published private(set) var isRefreshing = false
+    @Published private(set) var completedMetrics: Set<HealthMetric> = []
+    @Published private(set) var currentMetric: HealthMetric?
+    @Published private(set) var stopRequested = false
     private let reader = HealthReader()
     private let defaults = UserDefaults.standard
     private var waiters: [CheckedContinuation<Void, Never>] = []
@@ -75,18 +81,42 @@ final class SyncModel: ObservableObject {
         else { restoreObservers(); message = "同步已恢复。可点“立即同步”补齐数据。" }
     }
 
+    var busy: Bool { isSyncing || isAuthorizing || isPairing }
+    func supports(_ metric: HealthMetric) -> Bool { reader.sampleType(metric) != nil }
+
+    func refreshPreviews() async {
+        guard authorizationConfigured, !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
+        for metric in selected {
+            do { previews[metric] = try await reader.recent(metric); previewErrors.removeValue(forKey: metric) }
+            catch { previewErrors[metric] = "暂时无法读取，解锁手机后重试。" }
+        }
+        for metric in previews.keys where !selected.contains(metric) { previews.removeValue(forKey: metric) }
+    }
+
+    func requestStop() {
+        guard isSyncing else { return }
+        stopRequested = true
+        message = "正在保存已确认的进度…"
+    }
+
     func authorizeAndSync() async {
-        guard !selected.isEmpty, !isSyncing, !isAuthorizing else { return }
+        guard connection != nil, !paused, !selected.isEmpty, !busy else { return }
         isAuthorizing = true
-        defer { isAuthorizing = false }
         do {
             try await reader.authorize(selected)
-            // HealthKit only confirms completion of the consent flow, not which read permissions were granted.
+            // Completion does not disclose which read permissions the person granted.
             authorizationConfigured = true
             defaults.set(true, forKey: "authorizationConfigured")
+            isAuthorizing = false
             restoreObservers()
             await sync()
-        } catch { fail("读取设置未完成：\(error.localizedDescription)") }
+            await refreshPreviews()
+        } catch {
+            isAuthorizing = false
+            fail("读取设置未完成：\(error.localizedDescription)")
+        }
     }
 
     func restoreObservers() {
@@ -106,7 +136,7 @@ final class SyncModel: ObservableObject {
     }
 
     func backfill(days: Int) async {
-        guard !isSyncing, authorizationConfigured else { return }
+        guard !busy, !paused, authorizationConfigured, connection != nil else { return }
         resetAnchors(days: days)
         await sync()
     }
@@ -127,10 +157,13 @@ final class SyncModel: ObservableObject {
             return
         }
         isSyncing = true
+        stopRequested = false
+        completedMetrics = []
         isError = false
         transferred = 0
         defer {
             isSyncing = false
+            currentMetric = nil
             let pending = waiters
             waiters.removeAll()
             pending.forEach { $0.resume() }
@@ -140,21 +173,27 @@ final class SyncModel: ObservableObject {
             needsAnotherPass = false
             failures.removeAll()
             for metric in HealthMetric.allCases where selected.contains(metric) {
+                if stopRequested || Task.isCancelled { stopRequested = true; break }
+                currentMetric = metric
                 message = "正在同步\(metric.title)"
-                do { try await syncMetric(metric, connection: connection) }
+                do { try await syncMetric(metric, connection: connection); if !stopRequested { completedMetrics.insert(metric) } }
                 catch {
+                    let shouldStop = (error as? BridgeError)?.stopsSync == true
                     let error = error as NSError
                     if error.domain == HKErrorDomain && error.code == HKError.Code.errorDatabaseInaccessible.rawValue {
                         failures.append("\(metric.title)：请解锁 iPhone 后重试。")
                     } else { failures.append("\(metric.title)：\(error.localizedDescription)") }
+                    if shouldStop { break }
                 }
                 if UIApplication.shared.applicationState != .active && UIApplication.shared.backgroundTimeRemaining < 5 {
                     failures.append("已保存当前进度。下次打开 App 会继续同步。")
                     break
                 }
             }
-        } while needsAnotherPass && failures.isEmpty
-        if failures.isEmpty {
+        } while needsAnotherPass && failures.isEmpty && !stopRequested
+        if stopRequested {
+            message = "本次同步已停止，已确认的进度已保存。"
+        } else if failures.isEmpty {
             lastSync = Date()
             defaults.set(lastSync!.timeIntervalSince1970, forKey: "lastSync")
             message = transferred > 0 ? "同步完成，已发送 \(transferred) 条变更。" : "同步完成，没有新增变更。空数据也可能是尚未授权或没有记录。"
@@ -173,7 +212,9 @@ final class SyncModel: ObservableObject {
             anchor = try NSKeyedUnarchiver.unarchivedObject(ofClass: HKQueryAnchor.self, from: data)
         }
         while true {
+            if stopRequested || Task.isCancelled { stopRequested = true; return }
             let page = try await reader.page(metric, since: since, anchor: anchor)
+            try Task.checkCancellation()
             let additions = try page.samples.map { try reader.record($0, metric: metric) }
             let deleted = page.deleted.map { $0.uuid.uuidString.lowercased() }
             let anchorData = try page.anchor.map { try NSKeyedArchiver.archivedData(withRootObject: $0, requiringSecureCoding: true) }

@@ -25,6 +25,22 @@ TYPES = {
     "wrist_temperature": ("quantity", "degC"),
     "sleep": ("category", "category"),
     "workout": ("workout", "s"),
+    "vo2_max": ("quantity", "ml/kg*min"),
+    "heart_rate_recovery": ("quantity", "count/min"),
+    "walking_heart_rate": ("quantity", "count/min"),
+    "basal_energy": ("quantity", "kcal"),
+    "distance_walking_running": ("quantity", "m"),
+    "flights_climbed": ("quantity", "count"),
+    "stand_time": ("quantity", "min"),
+    "walking_speed": ("quantity", "m/s"),
+    "walking_step_length": ("quantity", "m"),
+    "walking_asymmetry": ("quantity", "%"),
+    "walking_double_support": ("quantity", "%"),
+    "walking_steadiness": ("quantity", "%"),
+    "daylight": ("quantity", "min"),
+    "environmental_audio": ("quantity", "dBASPL"),
+    "headphone_audio": ("quantity", "dBASPL"),
+    "breathing_disturbances": ("quantity", "count"),
 }
 
 

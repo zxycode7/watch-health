@@ -1,23 +1,23 @@
 {
   "date": "2026-10-17",
-  "release": "0.1.0",
+  "release": "0.2.0",
   "mac_service": "running as user LaunchAgent local.watchbridge.sync",
   "mcp": "registered and initialize/tools/list/status verified; 3 read-only tools",
   "python_tests": {
-    "passed": 13,
+    "passed": 15,
     "failed": 0
   },
-  "swift_transport": "live local TLS pairing, bad-pin rejection, authenticated synthetic upload and acknowledgement passed",
+  "swift_transport": "live TLS, pairing, pin rejection, invalid credential rejection, authenticated upload, acknowledgement and fatal connection classification passed",
   "swift_typecheck": "Models, Keychain, BridgeClient and HealthReader passed against installed macOS SDK",
-  "swift_syntax": "all 9 iOS Swift source files parsed",
+  "swift_syntax": "all iOS sources compiled against the installed iPhoneOS SDK in a signed physical-device build",
   "xcode_project": "project.pbxproj, Info.plist, and entitlements property-list validation passed",
-  "native_ui_audit": "strict ownership audit: 0 findings, errors or warnings",
+  "native_ui_audit": "strict UI ownership audit and DESIGN lint: 0 errors and 0 warnings",
   "real_health_data": "Physical iPhone foreground HealthKit sync and local read-only MCP query verified; health records remain in the private Mac state directory",
   "pending": [
-    "Background delivery, locked-device behavior and long-term reliability",
-    "Accessibility, partial permission refusal, certificate replacement and offline recovery acceptance"
+    "Long-term HealthKit background and locked-device delivery acceptance",
+    "Full VoiceOver, accessibility large-type matrix and prolonged high-volume backfill acceptance"
   ],
-  "scope": "Local verification snapshot. No personal health records, device identifiers, pairing links, credentials or signing material are published. CI status: https://github.com/zxycode7/watch-health/actions",
+  "scope": "Local real-device and desktop verification snapshot. No personal records, health counts, identifiers, pairing material or signing credentials are published. CI: https://github.com/zxycode7/watch-health/actions",
   "ios_simulator_build": {
     "status": "passed",
     "source_commit": "1f6baa67aa4613927b2d4690429aac4cfd01dd73",
@@ -28,8 +28,25 @@
     "signed_install": "passed on owner physical iPhone",
     "pairing_ui": "passed through physical XCUITest; backend registration matched the app device ID",
     "health_authorization": "selected seven read topics, confirmed system history scope and allowed access on the physical iPhone",
-    "foreground_sync": "passed; Mac samples belong to the physical iPhone and include Watch source records",
+    "foreground_sync": "upgraded app navigation, original record detail, capability screen and incremental sync passed on physical iPhone; existing pairing preserved",
     "read_only_mcp": "records query succeeded against received real data",
     "background_and_locked_delivery": "not verified"
-  }
+  },
+  "desktop": {
+    "build": "release app built and ad-hoc signature verified",
+    "installed": "owner Applications directory",
+    "storage_tests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "native_ui": "actual data, pagination, MCP detection, light/dark appearance, service stop/start, service update and QR generation exercised with native UI automation",
+    "data_access": "read-only SQLite and source-preserving raw charts",
+    "packaging": "signed app remains valid after packaged installer execution; subprocess bytecode immutability regression passed"
+  },
+  "metric_catalog": {
+    "supported_types": 28,
+    "native_backend_parity_test": "passed",
+    "new_types": "default off; owner chooses and confirms HealthKit read access"
+  },
+  "research": "docs/APPLE-WATCH-DATA-RESEARCH.md; ECG/RR, watchOS collection and SensorKit PPG are research paths, not implemented in this release"
 }

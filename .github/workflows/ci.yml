@@ -51,3 +51,6 @@ jobs:
           -derivedDataPath build/DerivedData
           CODE_SIGNING_ALLOWED=NO
           build
+
+      - name: Build and test the native Mac client
+        run: swift test --scratch-path build/MacDerived

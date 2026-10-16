@@ -22,7 +22,7 @@ def lan_ip():
 
 def main():
     os.umask(0o077)
-    parser = argparse.ArgumentParser(description="健康桥：自托管 Apple 健康数据")
+    parser = argparse.ArgumentParser(description="维律 Veyra：自托管 Apple 健康数据")
     commands = parser.add_subparsers(dest="command", required=True)
     serve = commands.add_parser("serve", help="启动本地 HTTPS 同步服务")
     serve.add_argument("--host", default="0.0.0.0")
@@ -56,7 +56,7 @@ def main():
         print("watchbridge://pair?" + urlencode({"endpoint": endpoint.rstrip("/"), "pin": pin, "code": code}))
     else:
         server = make_server(directory, args.host, args.port)
-        print(f"健康桥已启动：https://{lan_ip()}:{server.server_port}；Ctrl+C 停止。", flush=True)
+        print(f"维律 Veyra已启动：https://{lan_ip()}:{server.server_port}；Ctrl+C 停止。", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

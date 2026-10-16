@@ -1,26 +1,33 @@
 {
   "profile": "product-admin",
   "sourceRoots": [
-    "ios/WatchBridge"
+    "ios/WatchBridge",
+    "macos/Sources"
   ],
   "locale": "zh-CN",
   "canonicalMap": "UX-CONTRACT.md",
   "requiredCapabilities": [
     "Form",
-    "Select/Listbox"
+    "Select/Listbox",
+    "Table Selection",
+    "Date",
+    "Scrollbar"
   ],
   "ownership": {
     "Select/Listbox": "native"
   },
   "requiredCommands": [
     "unit",
-    "swift-transport"
+    "swift-transport",
+    "mac-tests"
   ],
   "commands": {
     "unit": "python3 -m unittest discover -s tests -v",
-    "swift-transport": "python3 -m tests.test_swift_transport"
+    "swift-transport": "python3 -m tests.test_swift_transport",
+    "mac-tests": "swift test"
   },
   "evidence": {
-    "failurePaths": "tests/test_watchbridge.py"
+    "failurePaths": "tests/test_watchbridge.py",
+    "nativeDatabaseBoundaries": "macos/Tests/LocalDatabaseTests.swift"
   }
 }

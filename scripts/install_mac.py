@@ -6,6 +6,7 @@ import os
 import plistlib
 import shutil
 import ssl
+import sqlite3
 import subprocess
 import sys
 import time
@@ -22,15 +23,16 @@ def main():
     if sys.version_info < (3, 11):
         raise SystemExit("需要 Python 3.11 或更新版本。")
     os.umask(0o077)
-    parser = argparse.ArgumentParser(description="安装健康桥 Mac 服务与 MCP")
+    parser = argparse.ArgumentParser(description="安装维律 Veyra Mac 服务与 MCP")
     parser.add_argument("--state-dir", type=Path, default=Path.home() / "Library/Application Support/WatchBridge")
     parser.add_argument("--no-autostart", action="store_true", help="只安装运行文件与 MCP，不注册开机启动")
+    parser.add_argument("--upgrade", action="store_true", help="备份本项目运行文件和数据库，再升级服务；不删除记录或重新配对")
     args = parser.parse_args()
     state = args.state_dir.expanduser().resolve()
     state.mkdir(parents=True, exist_ok=True, mode=0o700)
     state.chmod(0o700)
     runtime = state / "runtime"
-    python = shutil.which("python3") or sys.executable
+    python = sys.executable  # Use the validated 3.11+ interpreter, including when launched by the GUI.
     config_root = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
     config_file = config_root / "config.toml"
     original = config_file.read_bytes() if config_file.exists() else b""
@@ -46,21 +48,43 @@ def main():
         backup = backup_dir / ("codex-config-before-" + time.strftime("%Y%m%d-%H%M%S") + ".toml")
         backup.write_bytes(original)
         backup.chmod(0o600)
-    if runtime.exists():
-        marker = runtime / "INSTALL.json"
-        if not marker.exists() or json.loads(marker.read_text()).get("source") != str(ROOT):
+    upgraded = False
+    files = list((ROOT / "watchbridge").glob("*.py")) + [ROOT / "scripts" / name for name in ("run.py", "pair.py", "PairingQR.swift")]
+    existing_marker = json.loads((runtime / "INSTALL.json").read_text()) if (runtime / "INSTALL.json").is_file() else {}
+    if runtime.exists() and existing_marker.get("source") != str(ROOT):
+        if not (args.upgrade and existing_marker.get("repository") == "https://github.com/zxycode7/watch-health"):
             raise SystemExit("已有其他来源的运行目录，未覆盖。")
-        sources = list((ROOT / "watchbridge").glob("*.py")) + [ROOT / "scripts" / name for name in ("run.py", "pair.py", "PairingQR.swift")]
-        for source in sources:
-            installed = runtime / source.relative_to(ROOT)
-            if not installed.is_file() or installed.read_bytes() != source.read_bytes():
-                raise SystemExit("检测到代码版本差异；请先备份运行目录后再升级。数据库无需删除。")
-    else:
-        (runtime / "scripts").mkdir(parents=True)
-        shutil.copytree(ROOT / "watchbridge", runtime / "watchbridge", ignore=shutil.ignore_patterns("__pycache__"))
-        for name in ("run.py", "pair.py", "PairingQR.swift"):
-            shutil.copy2(ROOT / "scripts" / name, runtime / "scripts" / name)
-        (runtime / "INSTALL.json").write_text(json.dumps({"name": "WatchBridge", "version": "0.1.0", "source": str(ROOT)}, indent=2))
+    changed = runtime.exists() and any(not (runtime / source.relative_to(ROOT)).is_file() or (runtime / source.relative_to(ROOT)).read_bytes() != source.read_bytes() for source in files)
+    if changed and not args.upgrade:
+        raise SystemExit("检测到代码版本差异；请先备份运行目录后再升级。数据库无需删除。可使用 --upgrade 自动备份并升级。")
+    if not runtime.exists() or changed:
+        backup = None
+        staged = Path(tempfile.mkdtemp(prefix=".runtime-update-", dir=state))
+        try:
+            (staged / "scripts").mkdir()
+            shutil.copytree(ROOT / "watchbridge", staged / "watchbridge", ignore=shutil.ignore_patterns("__pycache__"))
+            for name in ("run.py", "pair.py", "PairingQR.swift"):
+                shutil.copy2(ROOT / "scripts" / name, staged / "scripts" / name)
+            (staged / "INSTALL.json").write_text(json.dumps({"name": "Veyra", "version": "0.2.0", "source": str(ROOT), "repository": "https://github.com/zxycode7/watch-health"}, indent=2))
+            if runtime.exists():
+                backup_root = state / "backups"
+                backup_root.mkdir(mode=0o700, exist_ok=True)
+                backup_dir = Path(tempfile.mkdtemp(prefix="before-upgrade-", dir=backup_root))
+                database = state / "health.sqlite3"
+                if database.exists():
+                    with sqlite3.connect(f"file:{database}?mode=ro", uri=True) as original_db, sqlite3.connect(backup_dir / "health.sqlite3") as copied_db:
+                        original_db.backup(copied_db)
+                    (backup_dir / "health.sqlite3").chmod(0o600)
+                backup = backup_dir / "runtime"
+                runtime.replace(backup)
+                upgraded = True
+            try:
+                staged.replace(runtime)
+            except BaseException:
+                if backup is not None: backup.replace(runtime)
+                raise
+        finally:
+            if staged.exists(): shutil.rmtree(staged)
     sys.path.insert(0, str(ROOT))
     from watchbridge.store import Store
     from watchbridge.server import ensure_certificate
@@ -107,6 +131,8 @@ def main():
         agent.write_bytes(plistlib.dumps(definition))
         agent.chmod(0o600)
     loaded = subprocess.run(["/bin/launchctl", "print", f"gui/{os.getuid()}/{LABEL}"], capture_output=True).returncode == 0
+    if loaded and upgraded:
+        subprocess.run(["/bin/launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{LABEL}"], check=True)
     if not loaded:
         subprocess.run(["/bin/launchctl", "bootstrap", f"gui/{os.getuid()}", str(agent)], check=True)
     context = ssl.create_default_context(cafile=str(cert))
@@ -115,7 +141,7 @@ def main():
         try:
             with urllib.request.urlopen("https://127.0.0.1:8765/healthz", context=context, timeout=2) as response:
                 if json.load(response).get("ok"):
-                    print("健康桥已安装：HTTPS 服务在线，登录后自动启动，只读 MCP 已注册。")
+                    print("维律 Veyra 已安装：HTTPS 服务在线，登录后自动启动，只读 MCP 已注册。")
                     print("数据与私钥保存在：" + str(state))
                     return
         except OSError:

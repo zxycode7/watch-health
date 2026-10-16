@@ -33,7 +33,7 @@ struct PairingSheet: View {
                              ? "尚未收到配对链接。请扫描 Mac 的配对二维码，或粘贴完整链接后继续。"
                              : "配对链接不完整或格式不正确。请重新生成并粘贴完整的 watchbridge://pair 链接。")
                             .font(.footnote)
-                            .foregroundStyle(isEmpty ? Color.secondary : Color.red)
+                            .foregroundStyle(isEmpty ? Color.secondary : BridgeTheme.danger)
                             .accessibilityIdentifier("pairing.validation")
                     }
                 }
@@ -47,7 +47,7 @@ struct PairingSheet: View {
                     }
                     .accessibilityIdentifier("pairing.confirm")
                     .disabled(model.isPairing || parsedLink == nil)
-                    if model.isError { Text(model.message).foregroundStyle(.red) }
+                    if model.isError { Text(model.message).foregroundStyle(BridgeTheme.danger) }
                 } footer: {
                     Text("只使用你自己 Mac 生成的链接。配对码 5 分钟内有效，只能使用一次。确认后，所选健康数据会发送到这台 Mac。")
                 }

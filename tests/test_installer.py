@@ -33,6 +33,26 @@ class InstallerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual(installed.read_text(), "# a user change must be preserved\n")
 
+    def test_upgrade_backs_up_runtime_and_preserves_data_and_config(self):
+        import sqlite3
+        with tempfile.TemporaryDirectory() as temporary:
+            base=Path(temporary); config=base/"codex"; config.mkdir(); state=base/"state"
+            command=[sys.executable,str(Path(__file__).resolve().parents[1]/"scripts/install_mac.py"),"--state-dir",str(state),"--no-autostart"]
+            env=dict(os.environ,CODEX_HOME=str(config))
+            subprocess.run(command,env=env,capture_output=True,check=True,timeout=20)
+            before_config=(config/"config.toml").read_bytes()
+            with sqlite3.connect(state/"health.sqlite3") as db: db.execute("CREATE TABLE owner_note (message TEXT)"); db.execute("INSERT INTO owner_note VALUES ('keep this data')")
+            installed=state/"runtime/watchbridge/store.py"; installed.write_text("# previous runtime\n")
+            result=subprocess.run(command+["--upgrade"],env=env,capture_output=True,text=True,timeout=20)
+            self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+            self.assertEqual((config/"config.toml").read_bytes(),before_config)
+            self.assertIn("class Store:",installed.read_text())
+            backups=list((state/"backups").glob("before-upgrade-*"))
+            self.assertEqual(len(backups),1)
+            self.assertEqual((backups[0]/"runtime/watchbridge/store.py").read_text(),"# previous runtime\n")
+            for database in [state/"health.sqlite3",backups[0]/"health.sqlite3"]:
+                with sqlite3.connect(database) as db:self.assertEqual(db.execute("SELECT message FROM owner_note").fetchone()[0],"keep this data")
+
 
 if __name__ == "__main__":
     unittest.main()

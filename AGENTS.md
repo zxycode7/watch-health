@@ -2,7 +2,7 @@
 
 ## 目标与范围
 
-本仓库是健康桥 WatchBridge 的开发源。产品约束见 `PRODUCT.md`，界面约束见 `DESIGN.md` 与 `UX-CONTRACT.md`。目标是本人 iPhone HealthKit → 本人 Mac → 只读 MCP，不引入第三方导出 App 或托管健康数据平台。
+本仓库是维律 Veyra（原健康桥 WatchBridge）的开发源。产品约束见 `PRODUCT.md`，界面约束见 `DESIGN.md` 与 `UX-CONTRACT.md`。目标是本人 iPhone HealthKit → 本人 Mac → 只读 MCP，不引入第三方导出 App 或托管健康数据平台。
 
 ## 开始前
 
@@ -45,3 +45,11 @@ xcodebuild -project ios/WatchBridge.xcodeproj -scheme WatchBridge -destination '
 ## 回复
 
 用中文简要说明改动、依据和验证结果，区分已确认事实、推断和未解决的问题。
+
+## 两端与探索边界
+
+- `ios/WatchBridge/Models.swift` 与 `Theme.swift` 由 iPhone 与 Mac 直接共用。品牌改名不能改变原有协议标识、Keychain service 或私有数据目录。
+- Mac 页面只读 SQLite；维护 100 条分页、来源和北京时间边界，以及查询过期结果保护。
+- SwiftUI、Charts、SQLite3、Python 标准库保持无运行时第三方依赖。
+- 额外运行 `swift test`；真机回归见 `scripts/test_iphone.py`，显式指定自己的设备与 Team。
+- 底层数据研究与当前实现分开；ECG / 逐搏序列 / watchOS 采集 / SensorKit 研究权限的结论见 `docs/APPLE-WATCH-DATA-RESEARCH.md`。不要把拥有硬件或 SDK 类型当成已获数据。

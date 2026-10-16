@@ -1,69 +1,96 @@
 ---
 version: alpha
-name: "健康桥"
-description: "把个人健康记录送回自己 Mac 的中文原生工具"
+name: "维律 Veyra"
+description: "个人节律的本地数据空间；iPhone 与 Mac 原生应用"
 colors:
-  primary: "#135C54"
+  primary: "#385CD9"
+  primary-dark: "#8FA8FF"
+  ink: "#111E44"
   background: "#F2F2F7"
   surface: "#FFFFFF"
   text: "#000000"
-  danger: "#FF3B30"
+  danger: "#BA1A1A"
 typography:
   sans:
     fontFamily: "SF Pro, PingFang SC"
+  display:
+    fontFamily: "SF Pro Rounded, PingFang SC"
   mono:
-    fontFamily: "SF Mono"
+    fontFamily: "SF Mono, PingFang SC"
 rounded:
-  DEFAULT: "18px"
+  DEFAULT: "22px"
 spacing:
   section-gap: "20px"
 components:
-  card: {}
-  button: {}
-  dialog: {}
+  card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+  button:
+    textColor: "{colors.primary}"
+  button-dark:
+    textColor: "{colors.primary-dark}"
+  dialog:
+    textColor: "{colors.text}"
+  cover:
+    backgroundColor: "{colors.ink}"
+  error:
+    textColor: "{colors.danger}"
 ---
 
-# 健康桥 Design System
+# 维律 Veyra Design System
 
 ## Overview
 
-参考真实设备之间的连接状态面板：让「连接哪台 Mac、同步到哪一步」一眼可见。用户是本项目所有者，主要在 iPhone 上配对、选择范围和确认同步状态。目标是中文产品工具，不涉及营销页或医疗诊断界面。
+用户明确要求品牌升级、原创图标、原生 Mac 客户端和手机全面优化。维律是本人的健康记录工作台：iPhone 管理健康读取与同步，Mac 管理长期记录与只读 MCP。中文产品界面，时间按北京时间；不表现为医疗诊断软件。
 
-唯一的识别元素是 iPhone — 连接 — Mac 的设备行；没有模拟心电图、虚构数据或装饰图表。首次打开展示真实未配对状态。
+视觉参考是精密仪器的秩序与个人档案的连续性。识别元素是珍珠白与钴蓝双带 V 形，位于深靛蓝底上。品牌色集中于封面和图标；工作区保持系统原生、安静、有明确数据边界。避免虚构心电图、医疗十字、健康评分、装饰性大数字或霓虹科技感。
 
-运行时 token 的唯一所有者为 `ios/WatchBridge/Theme.swift`（Model B），本文件记录其语义。iOS 系统颜色与 Dynamic Type 承担深色模式、对比度、中文排版适配。没有网页 CSS 或第二套主题。
+运行 token 仍采用 Model B：`ios/WatchBridge/Theme.swift` 为两端唯一共享运行时所有者，Mac Swift Package 直接编译该文件。`Models.swift` 是两端指标标题、单位、分类与格式化的共同所有者；Python 接收端由目录一致性测试约束。
 
 ## Colors
 
-主操作使用深青绿 primary，正文与表面使用系统语义色。上列 surface、text 和 background 是 iOS 浅色模式基线；深色模式由系统映射。错误同时有明确文字，不能仅靠红色识别。
+浅色主操作色为 #385CD9，深色主操作色为 #8FA8FF；品牌底色 #111E44。运行时使用动态 UIColor / NSColor 适配，卡片、背景与正文使用系统语义色；frontmatter 的 surface、text、background 是浅色基线。
+
+错误必须含恢复说明，连接状态同时有文字和符号。原始记录图表使用系统分类配色区分来源，不用红绿暗示医学判断。
 
 ## Typography
 
-标题使用圆角系统大标题，正文使用系统默认字体，地址、指纹及数量使用 SF Mono。所有字号采用语义 text style，允许 Dynamic Type。中文界面和辅助功能标签统一简体中文，日期按北京时间显示。
+品牌、标题使用 SF Pro Rounded 与中文系统字体。正文使用原生语义字体，iPhone 支持 Dynamic Type；UUID、工具名、指纹、数值及配置使用等宽字体。Mac 主数值字号 48pt 表示实际记录数量，不能被理解为健康分数。长中文自然换行，关键来源与 UUID 可展开或选择复制。
 
 ## Layout
 
-纵向 ScrollView，页面及卡片间距 20pt，卡片内边距 20pt。内容遵守系统安全区域，不固定屏幕高度。连接、同步、数据范围和补录为四个连续任务区。长文与错误自然换行。
+iPhone 使用三个独立 NavigationStack 的 TabView：概览、数据、设置。概览只保留连接和同步的主任务；数据提供最近原始样本与来源；设置管理 28 项范围、历史补录、外观和能力说明。
+
+Mac 使用 NavigationSplitView，侧栏 210–235pt，窗口至少 940×650pt。概览是有滚动边界的档案目录；原始记录页面独占表格滚动，固定 100 条一页，筛选与翻页保持可见。MCP、设备、存储页面独立自然滚动，不受表格高度约束。
+
+两端共用 20pt 间距、22pt 卡片圆角；品牌封面使用 26–28pt 圆角和更疏朗的内边距。这是业务命名的封面变体，不扩散至表格与表单。
 
 ## Elevation & Depth
 
-系统 grouped background 与白色/深色语义卡片建立层级，不叠加人工阴影、渐变、玻璃效果。
+系统表面负责明暗层级，不添加人工投影或玻璃层。图标的体积感只存在于品牌资产，不应用到数据控件。浅色、深色和跟随系统由用户在 App 内选择，不改变系统全局外观。
 
 ## Shapes
 
-卡片圆角 18pt。Button、Toggle、Picker、Form 和 Sheet 的外观及焦点归系统管理。
+普通卡片 22pt。表格、选择器、开关、对话框、焦点、滚动条交由原生 SwiftUI / 平台管理。按钮可点击、禁用、忙碌状态使用原生语义。
 
 ## Components
 
-`BridgeCard` 负责全部内容容器；`BridgeTheme` 负责共享颜色、字号及间距。配对由原生 Sheet/Form 承载，配对链接默认掩码，显示目标主机和部分证书指纹供核对。Picker 明确选择系统原生菜单。
+| 语义角色 | 运行时所有者 | 消费方 |
+|---|---|---|
+| 动态主操作色 | BridgeTheme.accent | 两端按钮、导航、来源符号 |
+| 品牌背景 | BridgeTheme.ink | 两端概览封面 |
+| 背景和表面 | BridgeTheme.background / surface | 两端工作区、BridgeCard |
+| 容器 | BridgeCard | 状态、连接、MCP、存储及目录 |
+| 品牌标识 | BrandMark + assets/brand/VeyraMaster.png | 图标、两端封面、应用信息 |
+| 指标语义与格式 | HealthMetric | 手机列表、Mac 表格、图表、设置 |
 
-操作名称固定为「配对 Mac」「确认配对」「授权并同步」「立即同步」「补录并合并」。配对失败保留输入，授权和同步期间禁用重复提交。忙碌时显示系统 ProgressView 及实际发送条数，不伪造百分比。状态和错误保留在同步卡片中；关键反馈不依赖短暂 toast。
-
-SF Symbols 只表达设备、连接和同步状态，图标旁保留文字。按钮使用原生触摸、键盘和 VoiceOver 语义。无装饰动画，系统负责减少动态效果。
+配对继续使用 PairingSheet 和 item 草稿状态；不因更名更改 bundle ID、Keychain service、URL scheme、数据库目录或 MCP 工具名。原始数据图表始终说明范围及来源，点图表示采样，区间图表示时段，不暗示连续波形或跨来源去重汇总。
 
 ## Do's and Don'ts
 
-- 保留真实来源、空状态和失败恢复提示。
-- 连接与同步操作由用户明确触发；不会在扫描链接后悄悄替换目的地。
-- 不渲染假健康数值或把记录条数解释为健康指标。
-- 不用固定字号或固定高度裁剪中文、错误和辅助功能大字体。
+- 显示真实数据、空记录原因、加载与恢复路径。
+- 筛选清空分页；旧异步结果不能覆盖新条件；手动刷新更新当前查询。
+- 保留只读 MCP、证书固定、Keychain、确认后保存 anchor 的边界。
+- 新数据项目默认关闭，选择后再走系统健康授权。
+- 不把 SDK 有接口解释为本设备、当前区域一定有数据；能力边界写清已接入与探索项。
+- 不把个人健康样本、二维码、签名、真机日志或界面截图提交到 GitHub。

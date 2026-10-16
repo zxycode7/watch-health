@@ -19,3 +19,9 @@ build/
 *.ipa
 *.xcarchive/
 pairing*.png
+
+.build/
+.swiftpm/
+*.xcresult/
+*.xctestrun
+*.app/

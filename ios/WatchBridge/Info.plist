@@ -1,19 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-    <key>CFBundleDisplayName</key><string>健康桥</string>
-    <key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
-    <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>1.0</string>
-    <key>CFBundleVersion</key><string>1</string>
-    <key>LSRequiresIPhoneOS</key><true/>
-    <key>NSHealthShareUsageDescription</key><string>读取你选择的步数、心率、睡眠等健康记录，加密同步到你自己配对的 Mac，供你查询和分析。</string>
-    <key>NSLocalNetworkUsageDescription</key><string>通过你所在的本地网络，将健康记录发送到你配对的 Mac。</string>
-    <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
-    <key>UIBackgroundModes</key><array><string>fetch</string></array>
-    <key>UILaunchScreen</key><dict/>
-    <key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
-    <key>CFBundleURLTypes</key><array><dict><key>CFBundleURLName</key><string>local.watchbridge.pair</string><key>CFBundleURLSchemes</key><array><string>watchbridge</string></array></dict></array>
-</dict></plist>
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>维律</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.2.0</string>
+	<key>CFBundleVersion</key>
+	<string>2</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>读取你选择的步数、心率、睡眠等健康记录，加密同步到你自己配对的 Mac，供你查询和分析。</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>通过你所在的本地网络，将健康记录发送到你配对的 Mac。</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>local.watchbridge.pair</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>watchbridge</string>
+			</array>
+		</dict>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>local.watchbridge.refresh</string>
+	</array>
+</dict>
+</plist>

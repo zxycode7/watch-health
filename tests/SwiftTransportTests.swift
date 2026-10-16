@@ -20,7 +20,12 @@ struct TransportTests {
             let _: SyncAcknowledgement = try await BridgeClient.request("v1/sync", endpoint: connection.endpoint,
                 pin: String(repeating: "0", count: 64), token: connection.token, body: payload, reply: SyncAcknowledgement.self)
             fatalError("Wrong certificate pin was accepted")
-        } catch { }
+        } catch let error as BridgeError { precondition(error.stopsSync) }
+        do {
+            let _: SyncAcknowledgement = try await BridgeClient.request("v1/sync", endpoint: connection.endpoint,
+                pin: connection.fingerprint, token: String(repeating: "x", count: 32), body: payload, reply: SyncAcknowledgement.self)
+            fatalError("Invalid credential was accepted")
+        } catch let error as BridgeError { precondition(error.stopsSync) }
         let ack = try await BridgeClient.request("v1/sync", endpoint: connection.endpoint, pin: connection.fingerprint,
             token: connection.token, body: payload, reply: SyncAcknowledgement.self)
         precondition(ack.ok && ack.batch_id == batchID && ack.accepted == 1)
